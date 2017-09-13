@@ -1,6 +1,6 @@
 [TOC]
 
-# use _ in for loops
+# usage of _
 ## loop
 ```python
 for _ in range(10):
@@ -11,3 +11,5 @@ Instead, we only want Python to call function ten times and need the _ to have v
 [link](https://stackoverflow.com/questions/26895362/what-does-in-python-do)
 ## place holder
 instance, _ = models.MyModel.objects.get_or_create(name="Whee")
+
+# decorators
