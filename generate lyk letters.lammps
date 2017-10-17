@@ -1,0 +1,84 @@
+# simulation of LAMMPS logo
+
+units		lj
+atom_style	atomic
+dimension	2
+
+# create 2d lattice, low density so diffuses
+
+lattice		sq2 0.5 origin 0.25 0.25 0.0
+region		box block 0 24 0 9 -0.5 0.5
+create_box	2 box
+create_atoms	1 box
+
+# LYK letters via regions, convert to type 2 atoms
+
+region	        L1 block 2 3 3 8 -0.5 0.5
+region	        L2 block 2 6 1 2 -0.5 0.5
+region		L union 2 L1 L2
+
+region	        Y1 block 8.5 9.5 5 8 -0.5 0.5
+region	        Y2 block 10 13 5 6 -0.5 0.5
+region	        Y3 block 13.5 14.5 5 8 -0.5 0.5
+region	        Y4 block 11 12 1 4 -0.5 0.5
+region		Y union 4 Y1 Y2 Y3 Y4
+
+region	        K1 block 17 18 1 8 -0.5 0.5
+region	        K2 block 19 20 4 5 -0.5 0.5
+region	        K3 block 20.5 21.5 2 7 -0.5 0.5
+region	        K4 block 21.5 22.5 6 8 -0.5 0.5
+region	        K5 block 21.5 22.5 1 3 -0.5 0.5
+region		K union 5 K1 K2 K3 K4 K5
+
+
+
+region          LAMMPS union 3 L Y K
+set		region LAMMPS type 2
+
+# LJ and other system parameters
+
+mass		* 1.0
+pair_style	lj/cut 2.5
+pair_coeff	* * 1.0 1.0 2.5
+
+timestep        0.005
+neighbor	0.3 bin
+neigh_modify	delay 0 every 1 check yes
+
+velocity	all create 2.0 87287 loop geom
+
+thermo		100
+dump		1 all atom 20 tmp.dump
+
+# run without integrator to "pause" the visualization
+
+run		100
+
+# dissolve the lattice
+
+fix		1 all nve
+fix		2 all enforce2d
+run		1000
+
+# run without integrator to "pause" the visualization
+
+unfix		1
+unfix		2
+run		200
+
+# reverse the velocities and continue run
+# logo and lattice should reassemble within round-off errors
+
+variable        vxflip atom -vx
+variable        vyflip atom -vy
+velocity	all set v_vxflip v_vyflip NULL
+
+fix		1 all nve
+fix		2 all enforce2d
+run		1000
+
+# run without integrator to "pause" the visualization
+
+unfix		1
+unfix		2
+run		100
